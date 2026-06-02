@@ -1,0 +1,7 @@
+branch_name,reviewer_name,rating,text,review_date,source,is_answered
+Mega Alma-Ata,Aigerim,2,"Ждали заказ 40 минут, официант не подходил.",2026-06-01,google,false
+Mega Alma-Ata,Timur,5,"Очень вкусно, спасибо команде.",2026-06-01,google,true
+Dostyk Plaza,Dana,1,"Грязный стол и холодная еда, больше не вернемся.",2026-06-02,google,false
+Dostyk Plaza,Alina,3,"Музыка была слишком громкой, но десерт понравился.",2026-06-02,manual_csv,false
+Astana Hub Cafe,Bekzat,2,"Тапсырысты ұзақ күттік, қызмет баяу болды.",2026-06-02,google,false
+

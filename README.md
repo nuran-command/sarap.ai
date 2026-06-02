@@ -1,68 +1,238 @@
-# 🌟 Sarap.ai | B2B SaaS Reputation & Review Velocity System
+# Sarap.ai
 
-Sarap.ai is a premium B2B SaaS reputation management platform specifically tailored for the restaurant and hospitality industry in **Kazakhstan and Central Asia**. 
+Sarap.ai is an AI-powered reputation management platform for restaurant groups in Kazakhstan and Central Asia.
 
-Rather than just another generic AI reply generator, Sarap.ai serves as a comprehensive mission control for restaurant owners and managers to monitor customer sentiment, detect critical complaints instantly, leverage context-aware AI drafting in Russian and Kazakh, compare branch metrics, and act on structured weekly reputation intelligence.
+The first product goal is to prove one workflow:
 
----
-
-## 🚀 Tech Stack
-
-### Monorepo Structure
-* **Frontend (`/dashboard`)**: Next.js 14+ (App Router), TypeScript, Tailwind CSS, REST API integration
-* **Backend (`/backend`)**: FastAPI, Python 3.11+, SQLAlchemy/SQLModel ORM, Alembic Migrations, JWT Authentication, Pandas (CSV Parsing), Pydantic v2
-* **Infrastructure**: Docker (PostgreSQL database), GitHub Actions for CI/CD
-
----
-
-## 🛠️ Project Structure
-
-```
-sarap-ai/
-  ├── backend/           # FastAPI app & database migrations
-  ├── dashboard/         # Next.js App Router admin panel
-  ├── docs/              # Product schemas, roadmap, database & prompt guidelines
-  ├── README.md          # Project roadmap and quickstart
-  └── AGENTS.md          # Multi-agent developer instructions
+```text
+CSV upload -> AI review analysis -> AI reply generation -> weekly report -> dashboard display
 ```
 
----
+The MVP stays focused on restaurants first: no mobile app, no 2GIS/Kaspi/POS integrations, no auto-posting, and no advanced billing until the core workflow is validated.
 
-## 🛫 Quickstart Guide
+## What Exists Now
 
-### 1. Prerequisites
-* **Node.js**: >= 18.x
-* **Python**: >= 3.11
-* **Docker & Docker Compose**
+The backend currently includes:
 
-### 2. Backend Setup
+- JWT authentication.
+- Organization and branch management.
+- CSV review import.
+- Deterministic local review analysis fallback.
+- Russian and Kazakh reply draft generation.
+- Review filters.
+- Branch risk levels.
+- Today dashboard summary.
+- Weekly report generation.
+- Alembic migration scaffold.
+
+The frontend is started in `dashboard/` as a Next.js App Router scaffold connected to the backend API shape.
+
+## Repository Structure
+
+```text
+sarap.ai/
+  backend/
+    app/
+      main.py
+      config.py
+      database.py
+      models/
+      schemas/
+      routes/
+      services/
+      utils/
+    alembic/
+    alembic.ini
+    requirements.txt
+    Dockerfile
+    docker-compose.yml
+    .env.example
+
+  dashboard/
+    src/
+      app/
+      components/
+      lib/
+      types/
+    package.json
+
+  data/
+    sample_reviews.csv
+
+  docs/
+    api.md
+    database.md
+    outreach.md
+    product.md
+    prompts.md
+    roadmap.md
+```
+
+## Backend Setup
+
+Use Python 3.12. The Dockerfile is pinned to Python 3.12, and `backend/.python-version` documents the same local runtime.
+
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
 cp .env.example .env
-docker compose up -d      # Start local PostgreSQL database
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
-The interactive Swagger API documentation will be available at: http://localhost:8000/docs
 
-### 3. Dashboard Frontend Setup
+Backend URL:
+
+```text
+http://127.0.0.1:8000
+```
+
+Swagger docs:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+If `DATABASE_URL` is omitted, the backend defaults to local SQLite. For PostgreSQL:
+
+```bash
+cd backend
+docker compose up -d
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+## Alembic
+
+From `backend/`:
+
+```bash
+alembic upgrade head
+alembic revision --autogenerate -m "describe change"
+```
+
+The initial migration creates:
+
+- `users`
+- `organizations`
+- `branches`
+- `reviews`
+- `ai_replies`
+- `weekly_reports`
+
+## Dashboard Setup
+
 ```bash
 cd dashboard
 npm install
 npm run dev
 ```
-Open http://localhost:3000 to view the responsive Sarap.ai dashboard panel.
 
----
+Dashboard URL:
 
-## 🌍 Localization & Market Context
-* **Bi-lingual AI Model**: Specialized response generation in Russian and Kazakh languages, accounting for regional hospitality idioms (e.g., traditional hospitality concepts, localized service levels in Central Asia).
-* **Cross-Branch Analytics**: Centralized metrics mapping out branch performance across cities (Almaty, Astana, Shymkent, Tashkent, etc.).
-* **Complaints Detection**: Real-time identification of critical health safety issues or severe negative reviews to alert managers instantly.
+```text
+http://localhost:3000
+```
 
----
+The dashboard reads `NEXT_PUBLIC_API_BASE_URL`; if omitted, it uses `http://127.0.0.1:8000`.
 
-## ⚖️ License
-Proprietary B2B Software. Developed by Sarap.ai team. All rights reserved.
+## Environment Variables
+
+Backend variables are documented in `backend/.env.example`.
+
+Important defaults:
+
+- `DATABASE_URL`: PostgreSQL in production; SQLite fallback for local development.
+- `SECRET_KEY`: must be changed before production.
+- `AI_PROVIDER=local`: uses deterministic local MVP analysis/replies.
+- `OPENAI_API_KEY`: optional until OpenAI-backed analysis is enabled.
+
+## API Endpoints
+
+See `docs/api.md` for details.
+
+### Health
+
+```text
+GET /health
+```
+
+### Auth
+
+```text
+POST /auth/register
+POST /auth/login
+GET /auth/me
+```
+
+### Organizations
+
+```text
+POST /organizations
+GET /organizations
+GET /organizations/{organization_id}
+```
+
+### Branches
+
+```text
+POST /organizations/{organization_id}/branches
+GET /organizations/{organization_id}/branches
+GET /branches/{branch_id}
+PATCH /branches/{branch_id}
+```
+
+### Reviews
+
+```text
+POST /organizations/{organization_id}/reviews/import
+GET /organizations/{organization_id}/reviews
+PATCH /reviews/{review_id}/answered
+```
+
+Supported review filters:
+
+```text
+branch_id
+sentiment
+category
+urgency
+is_answered
+```
+
+### AI Replies
+
+```text
+GET /reviews/{review_id}/replies
+POST /reviews/{review_id}/replies
+```
+
+### Reports And Dashboard
+
+```text
+POST /organizations/{organization_id}/reports/weekly/generate
+GET /organizations/{organization_id}/reports/weekly
+GET /organizations/{organization_id}/dashboard/today
+```
+
+## Sample CSV
+
+Use `data/sample_reviews.csv` to test review import.
+
+Expected CSV fields:
+
+```csv
+branch_name,reviewer_name,rating,text,review_date,source,is_answered
+Mega Alma-Ata,Aigerim,2,"Ждали заказ 40 минут, официант не подходил.",2026-06-01,google,false
+```
+
+## MVP Priorities
+
+1. Keep the backend workflow stable.
+2. Finish the dashboard screens around the existing API.
+3. Test the full flow with sample restaurant data.
+4. Use pilot feedback before adding integrations.
+
+## License
+
+Private project. All rights reserved.

@@ -1,1 +1,19 @@
-/* empty */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #17211f;
+  background: #f7f5ef;
+}
+
+body {
+  min-height: 100vh;
+  background: #f7f5ef;
+}
+
+button,
+input {
+  font: inherit;
+}
+
