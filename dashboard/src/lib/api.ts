@@ -1,5 +1,3 @@
-'use server';
-
 import { getAuthToken } from './auth';
 import type {
   Branch,
