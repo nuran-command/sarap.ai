@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useEffect, useState } from "react";
 import { MetricCard } from "@/components/MetricCard";
 import {
   getCurrentUser,
@@ -10,6 +10,7 @@ import {
   listReviews,
   listWeeklyReports,
 } from "@/lib/api";
+import { logout } from "@/lib/auth";
 import type { Branch, DashboardSummary, Organization, Review, User, WeeklyReport } from "@/types/api";
 
 type DashboardData = {
@@ -22,42 +23,41 @@ type DashboardData = {
 };
 
 export default function Home() {
-  const [token, setToken] = useState("");
   const [organizationId, setOrganizationId] = useState("");
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  async function loadDashboard(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        const user = await getCurrentUser();
+        const organizations = await listOrganizations();
+        const activeOrganizationId = organizations[0]?.id;
 
-    try {
-      const user = await getCurrentUser(token);
-      const organizations = await listOrganizations(token);
-      const activeOrganizationId = Number(organizationId || organizations[0]?.id);
+        if (!activeOrganizationId) {
+          setData({ user, organizations, branches: [], reviews: [], summary: null, reports: [] });
+          return;
+        }
 
-      if (!activeOrganizationId) {
-        throw new Error("Create an organization in the backend first.");
+        const [branches, reviews, summary, reports] = await Promise.all([
+          listBranches(activeOrganizationId),
+          listReviews(activeOrganizationId),
+          getDashboardSummary(activeOrganizationId),
+          listWeeklyReports(activeOrganizationId),
+        ]);
+
+        setData({ user, organizations, branches, reviews, summary, reports });
+        setOrganizationId(String(activeOrganizationId));
+      } catch (loadError: any) {
+        setError(loadError instanceof Error ? loadError.message : "Unable to load dashboard");
+      } finally {
+        setIsLoading(false);
       }
-
-      const [branches, reviews, summary, reports] = await Promise.all([
-        listBranches(token, activeOrganizationId),
-        listReviews(token, activeOrganizationId),
-        getDashboardSummary(token, activeOrganizationId),
-        listWeeklyReports(token, activeOrganizationId),
-      ]);
-
-      setData({ user, organizations, branches, reviews, summary, reports });
-      setOrganizationId(String(activeOrganizationId));
-    } catch (loadError) {
-      setData(null);
-      setError(loadError instanceof Error ? loadError.message : "Unable to load dashboard");
-    } finally {
-      setIsLoading(false);
     }
-  }
+
+    loadDashboard();
+  }, []);
 
   const urgentReviews = data?.reviews.filter((review) => ["critical", "high"].includes(review.urgency)).slice(0, 5) ?? [];
 
@@ -69,35 +69,26 @@ export default function Home() {
             <p className="text-sm font-medium uppercase tracking-wide text-mint">Sarap.ai</p>
             <h1 className="mt-2 text-4xl font-semibold">Reputation Dashboard</h1>
           </div>
-          <form onSubmit={loadDashboard} className="grid gap-3 rounded-lg border border-stone-300 bg-white p-3 md:grid-cols-[minmax(240px,1fr)_120px_auto]">
-            <input
-              value={token}
-              onChange={(event) => setToken(event.target.value)}
-              placeholder="Bearer token"
-              className="rounded-md border border-stone-300 px-3 py-2 text-sm outline-none focus:border-mint"
-              type="password"
-              required
-            />
-            <input
-              value={organizationId}
-              onChange={(event) => setOrganizationId(event.target.value)}
-              placeholder="Org ID"
-              className="rounded-md border border-stone-300 px-3 py-2 text-sm outline-none focus:border-mint"
-              inputMode="numeric"
-            />
+          <div className="flex items-center gap-4">
+            {data?.user && (
+              <span className="text-sm text-stone-600 font-medium">
+                {data.user.full_name || data.user.email}
+              </span>
+            )}
             <button
-              type="submit"
-              disabled={isLoading}
-              className="rounded-md bg-mint px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => logout()}
+              className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-stone-50 transition"
             >
-              {isLoading ? "Loading" : "Load"}
+              Sign out
             </button>
-          </form>
+          </div>
         </header>
 
         {error ? <div className="rounded-lg border border-tomato/30 bg-red-50 p-4 text-sm text-tomato">{error}</div> : null}
 
-        {data?.summary ? (
+        {isLoading ? (
+          <div className="py-20 text-center text-stone-500">Loading dashboard data...</div>
+        ) : data?.summary ? (
           <>
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <MetricCard label="Negative this week" value={data.summary.negative_reviews_this_week} tone="danger" />
@@ -195,10 +186,9 @@ export default function Home() {
           </>
         ) : (
           <section className="rounded-lg border border-stone-300 bg-white p-8">
-            <h2 className="text-2xl font-semibold">Connect to the backend</h2>
+            <h2 className="text-2xl font-semibold">Welcome to Sarap.ai</h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
-              Register or log in through the backend, paste the bearer token, and load the first organization. The page uses
-              `/auth/me`, organization-scoped reviews, branches, reports, and today dashboard endpoints.
+              You haven't created an organization yet. We will build the organization creation flow in the next step!
             </p>
           </section>
         )}
