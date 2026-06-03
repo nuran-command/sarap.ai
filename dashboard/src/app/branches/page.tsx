@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { BranchRiskCard } from "@/components/BranchRiskCard";
 import { createBranch, listBranches, listOrganizations } from "@/lib/api";
 import type { Branch, BranchCreatePayload, Organization } from "@/types/api";
 
@@ -176,39 +177,7 @@ export default function BranchesPage() {
 
           <div className="grid gap-3">
             {branches.map((branch) => (
-              <article key={branch.id} className="rounded-lg border border-stone-200 bg-white p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <h3 className="font-semibold text-ink">{branch.name}</h3>
-                    <p className="mt-1 text-sm text-stone-500">{[branch.city, branch.address].filter(Boolean).join(", ")}</p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-right text-sm">
-                    <div>
-                      <p className="text-stone-500">Rating</p>
-                      <p className="font-semibold text-ink">{branch.current_rating.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-stone-500">Reviews</p>
-                      <p className="font-semibold text-ink">{branch.review_count}</p>
-                    </div>
-                    <div>
-                      <p className="text-stone-500">Risk</p>
-                      <p className="font-semibold text-ink">{branch.risk_level}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {branch.google_maps_url ? (
-                  <a
-                    href={branch.google_maps_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-3 inline-flex text-sm font-medium text-mint hover:text-ink"
-                  >
-                    Open map
-                  </a>
-                ) : null}
-              </article>
+              <BranchRiskCard key={branch.id} branch={branch} />
             ))}
 
             {!branches.length && !isLoading ? (

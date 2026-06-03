@@ -57,18 +57,26 @@ def dashboard_summary(db: Session, organization: Organization) -> dict[str, obje
     week_start = today - timedelta(days=6)
     today_reviews = _reviews_for_period(db, organization.id, today, today)
     week_reviews = _reviews_for_period(db, organization.id, week_start, today)
+    today_negative = [review for review in today_reviews if review.sentiment == "negative"]
     negative_week = [review for review in week_reviews if review.sentiment == "negative"]
     unanswered_negative = [review for review in negative_week if not review.is_answered]
     top_complaint = _top_complaint(negative_week)
+    primary_complaint_today = _top_complaint(today_negative)
     highest_risk_branch = _highest_risk_branch(db, organization.id)
+    branches_at_risk = _branches_at_risk_count(db, organization.id)
     replies_prepared = _reply_count_for_reviews(db, [review.id for review in week_reviews])
     action = recommended_actions_for(top_complaint, highest_risk_branch or "none", len(negative_week))[0]
 
     return {
-        "negative_reviews_today": sum(1 for review in today_reviews if review.sentiment == "negative"),
+        "total_reviews_today": len(today_reviews),
+        "negative_reviews_today": len(today_negative),
+        "critical_reviews_today": sum(1 for review in today_reviews if review.urgency == "critical"),
+        "unanswered_reviews_today": sum(1 for review in today_reviews if not review.is_answered),
         "negative_reviews_this_week": len(negative_week),
         "unanswered_negative_reviews": len(unanswered_negative),
+        "branches_at_risk": branches_at_risk,
         "highest_risk_branch": highest_risk_branch,
+        "primary_complaint_today": primary_complaint_today if primary_complaint_today != "none" else None,
         "top_complaint_this_week": top_complaint if top_complaint != "none" else None,
         "rating_change": _rating_change(week_reviews),
         "ai_replies_prepared": replies_prepared,
@@ -154,6 +162,14 @@ def _highest_risk_branch(db: Session, organization_id: int) -> str | None:
     return max(branches, key=lambda branch: (priority.get(branch.risk_level, 0), branch.review_count)).name
 
 
+def _branches_at_risk_count(db: Session, organization_id: int) -> int:
+    return (
+        db.query(Branch)
+        .filter(Branch.organization_id == organization_id, Branch.risk_level.in_(("critical", "high", "medium")))
+        .count()
+    )
+
+
 def _reply_count_for_reviews(db: Session, review_ids: list[int]) -> int:
     if not review_ids:
         return 0
@@ -170,4 +186,3 @@ def _rating_change(reviews: list[Review]) -> float:
     early_avg = sum(review.rating for review in early) / len(early)
     late_avg = sum(review.rating for review in late) / len(late) if late else early_avg
     return round(late_avg - early_avg, 2)
-

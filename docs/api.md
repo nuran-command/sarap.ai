@@ -41,6 +41,13 @@ Branch create/update payload:
 }
 ```
 
+Branch reads also include calculated dashboard fields:
+
+- `status_flag`: `critical`, `warning`, or `stable`.
+- `weekly_negative_reviews`
+- `unanswered_reviews`
+- `last_review_date`
+
 ## Reviews
 
 - `POST /organizations/{organization_id}/reviews/import`
@@ -69,3 +76,19 @@ Reply generation supports:
 - `POST /organizations/{organization_id}/reports/weekly/generate`
 - `GET /organizations/{organization_id}/reports/weekly`
 - `GET /organizations/{organization_id}/dashboard/today`
+
+Today dashboard fields include:
+
+- `total_reviews_today`
+- `negative_reviews_today`
+- `critical_reviews_today`
+- `unanswered_reviews_today`
+- `negative_reviews_this_week`
+- `unanswered_negative_reviews`
+- `branches_at_risk`
+- `highest_risk_branch`
+- `primary_complaint_today`
+- `top_complaint_this_week`
+- `rating_change`
+- `ai_replies_prepared`
+- `recommended_action`

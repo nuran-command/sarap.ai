@@ -22,6 +22,7 @@ The backend currently includes:
 - Russian and Kazakh reply draft generation.
 - Review filters.
 - Branch risk levels.
+- Branch status flags and weekly branch health cards.
 - Today dashboard summary.
 - Weekly report generation.
 - Alembic migration scaffold.

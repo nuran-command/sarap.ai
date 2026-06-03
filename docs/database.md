@@ -26,6 +26,14 @@ Branches store the core location profile used by the dashboard:
 - `address`
 - `google_maps_url`
 
+Branch performance metrics are stored on the branch row and refreshed from review history:
+
+- `current_rating`
+- `review_count`
+- `risk_level`
+
+The API also exposes computed fields for the dashboard, including `status_flag`, weekly negative review count, unanswered count, and latest review date.
+
 ## Local Development
 
 The backend defaults to SQLite when `DATABASE_URL` is omitted. Production should use PostgreSQL.

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -45,6 +45,10 @@ class BranchRead(BaseModel):
     current_rating: float
     review_count: int
     risk_level: str
+    status_flag: str
+    weekly_negative_reviews: int = 0
+    unanswered_reviews: int = 0
+    last_review_date: date | None = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

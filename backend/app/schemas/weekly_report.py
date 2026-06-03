@@ -38,12 +38,16 @@ class WeeklyReportDBRead(BaseModel):
 
 
 class DashboardSummary(BaseModel):
+    total_reviews_today: int
     negative_reviews_today: int
+    critical_reviews_today: int
+    unanswered_reviews_today: int
     negative_reviews_this_week: int
     unanswered_negative_reviews: int
+    branches_at_risk: int
     highest_risk_branch: str | None
+    primary_complaint_today: str | None
     top_complaint_this_week: str | None
     rating_change: float
     ai_replies_prepared: int
     recommended_action: str
-

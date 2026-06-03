@@ -23,6 +23,10 @@ export type Branch = {
   current_rating: number;
   review_count: number;
   risk_level: string;
+  status_flag: "critical" | "warning" | "stable";
+  weekly_negative_reviews: number;
+  unanswered_reviews: number;
+  last_review_date: string | null;
   created_at: string;
 };
 
@@ -53,10 +57,15 @@ export type Review = {
 };
 
 export type DashboardSummary = {
+  total_reviews_today: number;
   negative_reviews_today: number;
+  critical_reviews_today: number;
+  unanswered_reviews_today: number;
   negative_reviews_this_week: number;
   unanswered_negative_reviews: number;
+  branches_at_risk: number;
   highest_risk_branch: string | null;
+  primary_complaint_today: string | null;
   top_complaint_this_week: string | null;
   rating_change: number;
   ai_replies_prepared: number;

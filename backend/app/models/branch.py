@@ -20,3 +20,11 @@ class Branch(Base):
 
     organization = relationship("Organization", back_populates="branches")
     reviews = relationship("Review", back_populates="branch", cascade="all, delete-orphan")
+
+    @property
+    def status_flag(self) -> str:
+        if self.risk_level == "critical":
+            return "critical"
+        if self.risk_level in {"high", "medium"}:
+            return "warning"
+        return "stable"
