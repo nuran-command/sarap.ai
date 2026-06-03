@@ -1,57 +1,65 @@
+'use server';
+
+import { getAuthToken } from './auth';
 import type { Branch, DashboardSummary, Organization, Review, User, WeeklyReport } from "@/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-type RequestOptions = RequestInit & {
-  token?: string;
-};
+interface RequestOptions extends RequestInit {
+  requireAuth?: boolean;
+}
 
-async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const headers = new Headers(options.headers);
-  headers.set("Accept", "application/json");
+export async function fetchApi<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  const { requireAuth = true, headers, ...customConfig } = options;
 
-  if (!(options.body instanceof FormData)) {
-    headers.set("Content-Type", "application/json");
+  const config: RequestInit = {
+    ...customConfig,
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  };
+
+  if (requireAuth) {
+    const token = await getAuthToken();
+    if (token) {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
   }
 
-  if (options.token) {
-    headers.set("Authorization", `Bearer ${options.token}`);
-  }
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
   if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(detail || `Request failed with status ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'An error occurred during the request');
   }
 
-  return response.json() as Promise<T>;
+  return response.json();
 }
 
-export function getCurrentUser(token: string): Promise<User> {
-  return apiRequest<User>("/auth/me", { token });
+export function getCurrentUser(): Promise<User> {
+  return fetchApi<User>("/auth/me");
 }
 
-export function listOrganizations(token: string): Promise<Organization[]> {
-  return apiRequest<Organization[]>("/organizations", { token });
+export function listOrganizations(): Promise<Organization[]> {
+  return fetchApi<Organization[]>("/organizations");
 }
 
-export function listBranches(token: string, organizationId: number): Promise<Branch[]> {
-  return apiRequest<Branch[]>(`/organizations/${organizationId}/branches`, { token });
+export function listBranches(organizationId: number): Promise<Branch[]> {
+  return fetchApi<Branch[]>(`/organizations/${organizationId}/branches`);
 }
 
-export function listReviews(token: string, organizationId: number): Promise<Review[]> {
-  return apiRequest<Review[]>(`/organizations/${organizationId}/reviews`, { token });
+export function listReviews(organizationId: number): Promise<Review[]> {
+  return fetchApi<Review[]>(`/organizations/${organizationId}/reviews`);
 }
 
-export function getDashboardSummary(token: string, organizationId: number): Promise<DashboardSummary> {
-  return apiRequest<DashboardSummary>(`/organizations/${organizationId}/dashboard/today`, { token });
+export function getDashboardSummary(organizationId: number): Promise<DashboardSummary> {
+  return fetchApi<DashboardSummary>(`/organizations/${organizationId}/dashboard/today`);
 }
 
-export function listWeeklyReports(token: string, organizationId: number): Promise<WeeklyReport[]> {
-  return apiRequest<WeeklyReport[]>(`/organizations/${organizationId}/reports/weekly`, { token });
+export function listWeeklyReports(organizationId: number): Promise<WeeklyReport[]> {
+  return fetchApi<WeeklyReport[]>(`/organizations/${organizationId}/reports/weekly`);
 }
-
