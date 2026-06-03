@@ -18,11 +18,22 @@ export type Branch = {
   organization_id: number;
   name: string;
   city: string;
+  address: string | null;
+  google_maps_url: string | null;
   current_rating: number;
   review_count: number;
   risk_level: string;
   created_at: string;
 };
+
+export type BranchCreatePayload = {
+  name: string;
+  city: string;
+  address?: string | null;
+  google_maps_url?: string | null;
+};
+
+export type BranchUpdatePayload = Partial<BranchCreatePayload>;
 
 export type Review = {
   id: number;
@@ -67,4 +78,3 @@ export type WeeklyReport = {
   recommended_actions: string[];
   created_at: string;
 };
-

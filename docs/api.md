@@ -30,6 +30,17 @@ Authorization: Bearer <token>
 - `GET /branches/{branch_id}`
 - `PATCH /branches/{branch_id}`
 
+Branch create/update payload:
+
+```json
+{
+  "name": "Mega Alma-Ata",
+  "city": "Almaty",
+  "address": "Rozybakiev 247A",
+  "google_maps_url": "https://maps.google.com/..."
+}
+```
+
 ## Reviews
 
 - `POST /organizations/{organization_id}/reviews/import`

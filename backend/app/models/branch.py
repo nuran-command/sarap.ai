@@ -11,6 +11,8 @@ class Branch(Base):
     organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     city: Mapped[str] = mapped_column(String(120), default="Almaty", nullable=False)
+    address: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    google_maps_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     current_rating: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     review_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     risk_level: Mapped[str] = mapped_column(String(24), default="low", nullable=False)
@@ -18,4 +20,3 @@ class Branch(Base):
 
     organization = relationship("Organization", back_populates="branches")
     reviews = relationship("Review", back_populates="branch", cascade="all, delete-orphan")
-

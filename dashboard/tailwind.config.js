@@ -1,27 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#10b981', // Emerald for healthy growth
-          600: '#059669',
-          900: '#064e3b',
-        },
-        accent: {
-          rose: '#f43f5e',   // For critical / urgent complaints
-          amber: '#f59e0b',  // For warning / neutral reviews
-          emerald: '#10b981',// For positive responses
-        }
+        ink: "#17211f",
+        field: "#f7f5ef",
+        mint: "#2e7d6b",
+        tomato: "#c84835",
+        gold: "#c99732",
       },
     },
   },
   plugins: [],
-}
+};

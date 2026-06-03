@@ -19,7 +19,13 @@ def create_branch(
     current_user: User = Depends(get_current_user),
 ) -> Branch:
     _get_owned_organization(db, organization_id, current_user.id)
-    branch = Branch(organization_id=organization_id, name=payload.name, city=payload.city)
+    branch = Branch(
+        organization_id=organization_id,
+        name=payload.name,
+        city=payload.city,
+        address=payload.address,
+        google_maps_url=payload.google_maps_url,
+    )
     db.add(branch)
     db.commit()
     db.refresh(branch)
@@ -77,4 +83,3 @@ def _get_owned_branch(db: Session, branch_id: int, owner_id: int) -> Branch:
     if branch is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Branch not found")
     return branch
-

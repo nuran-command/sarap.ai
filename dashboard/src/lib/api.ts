@@ -1,7 +1,16 @@
 'use server';
 
 import { getAuthToken } from './auth';
-import type { Branch, DashboardSummary, Organization, Review, User, WeeklyReport } from "@/types/api";
+import type {
+  Branch,
+  BranchCreatePayload,
+  BranchUpdatePayload,
+  DashboardSummary,
+  Organization,
+  Review,
+  User,
+  WeeklyReport,
+} from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -49,6 +58,26 @@ export function listOrganizations(): Promise<Organization[]> {
 
 export function listBranches(organizationId: number): Promise<Branch[]> {
   return fetchApi<Branch[]>(`/organizations/${organizationId}/branches`);
+}
+
+export function createBranch(organizationId: number, payload: BranchCreatePayload): Promise<Branch> {
+  return fetchApi<Branch>(`/organizations/${organizationId}/branches`, {
+    method: "POST",
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getBranch(branchId: number): Promise<Branch> {
+  return fetchApi<Branch>(`/branches/${branchId}`);
+}
+
+export function updateBranch(branchId: number, payload: BranchUpdatePayload): Promise<Branch> {
+  return fetchApi<Branch>(`/branches/${branchId}`, {
+    method: "PATCH",
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
 }
 
 export function listReviews(

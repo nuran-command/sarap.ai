@@ -16,6 +16,7 @@ The backend currently includes:
 
 - JWT authentication.
 - Organization and branch management.
+- Branch address and Google Maps metadata.
 - CSV review import.
 - Deterministic local review analysis fallback.
 - Russian and Kazakh reply draft generation.
@@ -25,7 +26,7 @@ The backend currently includes:
 - Weekly report generation.
 - Alembic migration scaffold.
 
-The frontend is started in `dashboard/` as a Next.js App Router scaffold connected to the backend API shape.
+The frontend includes cookie-authenticated login/register screens, a persistent sidebar layout, and a branch management page.
 
 ## Repository Structure
 
