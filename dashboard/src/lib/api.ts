@@ -15,7 +15,6 @@ export async function fetchApi<T>(endpoint: string, options: RequestOptions = {}
   const config: RequestInit = {
     ...customConfig,
     headers: {
-      'Content-Type': 'application/json',
       ...headers,
     },
   };
@@ -24,7 +23,7 @@ export async function fetchApi<T>(endpoint: string, options: RequestOptions = {}
     const token = await getAuthToken();
     if (token) {
       config.headers = {
-        ...config.headers,
+        ...(config.headers || {}),
         Authorization: `Bearer ${token}`,
       };
     }
@@ -52,14 +51,39 @@ export function listBranches(organizationId: number): Promise<Branch[]> {
   return fetchApi<Branch[]>(`/organizations/${organizationId}/branches`);
 }
 
-export function listReviews(organizationId: number): Promise<Review[]> {
-  return fetchApi<Review[]>(`/organizations/${organizationId}/reviews`);
+export function listReviews(
+  organizationId: number, 
+  searchParams?: Record<string, string>
+): Promise<Review[]> {
+  const params = new URLSearchParams();
+  if (searchParams) {
+    Object.entries(searchParams).forEach(([key, value]) => {
+      if (value) params.append(key, value);
+    });
+  }
+  const queryString = params.toString() ? `?${params.toString()}` : '';
+  return fetchApi<Review[]>(`/organizations/${organizationId}/reviews${queryString}`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export function getDashboardSummary(organizationId: number): Promise<DashboardSummary> {
-  return fetchApi<DashboardSummary>(`/organizations/${organizationId}/dashboard/today`);
+  return fetchApi<DashboardSummary>(`/organizations/${organizationId}/dashboard/today`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export function listWeeklyReports(organizationId: number): Promise<WeeklyReport[]> {
-  return fetchApi<WeeklyReport[]>(`/organizations/${organizationId}/reports/weekly`);
+  return fetchApi<WeeklyReport[]>(`/organizations/${organizationId}/reports/weekly`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export function uploadReviewsCsv(organizationId: number, formData: FormData): Promise<{ imported_reviews: number }> {
+  return fetchApi<{ imported_reviews: number }>(`/organizations/${organizationId}/reviews/import`, {
+    method: 'POST',
+    body: formData,
+    // Note: Do NOT set Content-Type header when sending FormData. 
+    // The browser/fetch automatically sets it to multipart/form-data with the correct boundary.
+  });
 }
