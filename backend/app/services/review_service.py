@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import csv
 from datetime import date
-from io import StringIO
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -12,34 +10,22 @@ from app.models.branch import Branch
 from app.models.organization import Organization
 from app.models.review import Review
 from app.services.ai_service import analyze_review, generate_reply
-
-REQUIRED_CSV_COLUMNS = {
-    "branch_name",
-    "reviewer_name",
-    "rating",
-    "text",
-    "review_date",
-    "source",
-    "is_answered",
-}
+from app.utils.csv_parser import parse_reviews_csv
 
 
 def import_reviews_csv(db: Session, organization: Organization, content: bytes) -> dict[str, Any]:
     errors: list[str] = []
-    decoded_content = content.decode("utf-8-sig")
-    reader = csv.DictReader(StringIO(decoded_content))
-    if reader.fieldnames is None:
-        raise ValueError("CSV has no header row")
-
-    missing_columns = REQUIRED_CSV_COLUMNS.difference(reader.fieldnames)
-    if missing_columns:
-        raise ValueError(f"CSV is missing required columns: {', '.join(sorted(missing_columns))}")
+    
+    try:
+        rows = parse_reviews_csv(content)
+    except ValueError as e:
+        raise ValueError(str(e))
 
     imported_reviews = 0
     created_branches = 0
     generated_replies = 0
 
-    for index, row in enumerate(reader, start=2):
+    for index, row in enumerate(rows, start=2):
         try:
             branch_name = row["branch_name"].strip()
             if not branch_name:
