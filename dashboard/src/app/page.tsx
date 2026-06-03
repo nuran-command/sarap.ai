@@ -75,6 +75,9 @@ export default function Home() {
                 {data.user.full_name || data.user.email}
               </span>
             )}
+            <a href="/reviews" className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-stone-50 transition">
+              Reviews Feed
+            </a>
             <button
               onClick={() => logout()}
               className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-stone-50 transition"
