@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { setAuthToken } from '@/lib/auth'
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,15 +19,15 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const res = await fetch('http://localhost:8000/auth/login', {
+      const res = await fetch('http://localhost:8000/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ full_name: fullName, email, password }),
       })
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.detail || 'Invalid email or password')
+        throw new Error(data.detail || 'Failed to register')
       }
 
       const data = await res.json()
@@ -44,12 +45,12 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-sm border border-ink/5">
         <div>
           <h2 className="mt-2 text-center text-3xl font-extrabold text-ink">
-            Sign in to Sarap.ai
+            Create an account
           </h2>
           <p className="mt-2 text-center text-sm text-ink/60">
             Or{' '}
-            <Link href="/register" className="font-medium text-mint hover:text-mint/80 transition">
-              create a new account
+            <Link href="/login" className="font-medium text-mint hover:text-mint/80 transition">
+              sign in to your existing account
             </Link>
           </p>
         </div>
@@ -60,6 +61,22 @@ export default function LoginPage() {
             </div>
           )}
           <div className="rounded-md shadow-sm space-y-4">
+            <div>
+              <label htmlFor="full-name" className="sr-only">
+                Full Name
+              </label>
+              <input
+                id="full-name"
+                name="full_name"
+                type="text"
+                autoComplete="name"
+                required
+                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-ink/20 placeholder-ink/40 text-ink focus:outline-none focus:ring-mint focus:border-mint focus:z-10 sm:text-sm bg-field/50"
+                placeholder="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
             <div>
               <label htmlFor="email-address" className="sr-only">
                 Email address
@@ -84,7 +101,7 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
                 className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-ink/20 placeholder-ink/40 text-ink focus:outline-none focus:ring-mint focus:border-mint focus:z-10 sm:text-sm bg-field/50"
                 placeholder="Password"
@@ -100,7 +117,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-ink hover:bg-ink/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink transition disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Creating account...' : 'Create account'}
             </button>
           </div>
         </form>
