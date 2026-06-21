@@ -1,0 +1,6 @@
+{
+  "name": "Sarap.ai",
+  "description": "AI-powered reputation management platform for restaurant groups in Central Asia with Smart QR feedback buffers, staff leaderboards, and menu sentiment heatmaps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
